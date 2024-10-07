@@ -25,3 +25,55 @@ export type DeepPick<
   : Paths extends keyof T
   ? { [K in Paths]: T[K] } // Если путь не содержит вложенности (нет '.'), просто выбираем ключ
   : never;
+
+
+interface PhoneSpecs {
+    model_name: string;
+    battery_capacity: number;
+    dimensions: {
+      length_mm: number;
+      width_mm: number;
+      height_mm: number;
+    };
+  }
+  
+  // Проверяем, что ключи преобразуются в camelCase
+  type CamelizedPhoneSpecs = Camelize<PhoneSpecs>;
+  type TestCamelize1 = CamelizedPhoneSpecs extends {
+    modelName: string;
+    batteryCapacity: number;
+    dimensions: {
+      lengthMm: number;
+      widthMm: number;
+      heightMm: number;
+    };
+  } ? true : false;
+
+  
+  interface FullPhoneSpecs {
+    model: string;
+    battery: {
+      capacity: number;
+      type: 'Li-Ion' | 'Li-Po';
+    };
+    connectivity: {
+      WiFi: boolean;
+      Bluetooth: boolean;
+      NFC: boolean;
+      GPS: boolean;
+    };
+  }
+  
+  // Проверка DeepPick: должен вернуться тип { battery: { capacity: number } }
+  type PickedPhoneSpecs = DeepPick<FullPhoneSpecs, 'battery.capacity'>;
+  type TestDeepPick1 = PickedPhoneSpecs extends {
+    battery: {
+      capacity: number;
+    };
+  } ? true : false;
+  
+  // Проверка DeepPick: должен вернуться тип { model: string }
+  type PickedModel = DeepPick<FullPhoneSpecs, 'model'>;
+  type TestDeepPick2 = PickedModel extends {
+    model: string;
+  } ? true : false;

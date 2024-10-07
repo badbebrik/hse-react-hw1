@@ -27,3 +27,96 @@ export type ParseURLParams<StringElem extends string> =
     : StringElem extends `${infer BeforeParam}:${infer ParamName}`
     ? ParamName // Если это последний параметр (нет больше / в строке), возвращаем его
     : never; // Если нет параметров - never
+
+interface PhoneSpecs {
+  model: string;
+  dimensions: {
+    length: number;
+    width: number;
+    thickness: number;
+  };
+  contacts: {
+    name: string;
+    phoneNumber: string;
+  }[];
+}
+
+type PartialPhone = DeepPartial<PhoneSpecs>;
+
+// Проверка DeepPartial: должен вернуться тип со всеми опциональными полями
+type TestDeepPartial = PartialPhone extends {
+  model?: string;
+  dimensions?: {
+    length?: number;
+    width?: number;
+    thickness?: number;
+  };
+  contacts?: {
+    name?: string;
+    phoneNumber?: string;
+  }[];
+}
+  ? true
+  : false;
+
+// Проверки MyCapitalize на разных кейсах
+type SingleLetter = MyCapitalize<"a">;
+type TestSingleLetter = SingleLetter extends "A" ? true : false;
+
+type EmptyString = MyCapitalize<"">;
+type TestEmptyString = EmptyString extends "" ? true : false;
+
+type AlreadyCapitalized = MyCapitalize<"BUKVA">;
+type TestAlreadyCapitalized = AlreadyCapitalized extends "BUKVA" ? true : false;
+
+type MultipleWords = MyCapitalize<"bukva bukva bukva">;
+type TestMultipleWords = MultipleWords extends "Bukva bukva bukva" ? true : false;
+
+interface PhoneSpecsWithReadonly {
+  readonly model: string;
+  readonly dimensions: {
+    readonly length: number;
+    readonly width: number;
+    readonly thickness: number;
+  };
+  readonly contacts: readonly {
+    readonly name: string;
+    readonly phoneNumber: string;
+  }[];
+}
+
+type MutablePhone = DeepMutable<PhoneSpecsWithReadonly>;
+
+// Проверка DeepMutable: должен вернуться тип с всеми полями без readonly
+type TestDeepMutable = MutablePhone extends {
+  model: string;
+  dimensions: {
+    length: number;
+    width: number;
+    thickness: number;
+  };
+  contacts: {
+    name: string;
+    phoneNumber: string;
+  }[];
+}
+  ? true
+  : false;
+
+// Тесты для ParseURLParams
+type Params = ParseURLParams<"/phone/:id/:model/:year">;
+type TestParseURLParams = Params extends "id" | "model" | "year" ? true : false;
+
+type SingleParam = ParseURLParams<"/phone/:model">;
+type TestSingleParam = SingleParam extends "model" ? true : false;
+
+type NoParams = ParseURLParams<"/phone/model">;
+type TestNoParams = NoParams extends never ? true : false;
+
+type MultipleParams = ParseURLParams<"/phone/:model/:year/:color">;
+type TestMultipleParams = MultipleParams extends "model" | "year" | "color"
+  ? true
+  : false;
+
+type ComplexURL = ParseURLParams<"/api/v1/phone/:id/specs/:version">;
+type TestComplexURL = ComplexURL extends "id" | "version" ? true : false;
